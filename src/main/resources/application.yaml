@@ -1,0 +1,8 @@
+ktor:
+    application:
+        modules:
+            - dev.ector.ApplicationKt.module
+    deployment:
+        host: localhost
+        port: 8080
+    development: true
