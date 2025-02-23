@@ -47,19 +47,24 @@ class ZapController(
                         fileType?.let { name.add(it) }
 
                         // Get the photo URL
-                        val photoUrl = "http://$address/api/zaps/images/${name.joinToString(".")}"
+                        val photoUrl = "http://$address/api/v1/zaps/images/${name.joinToString(".")}"
                         val sparesPhotos = zapSparesPhotos[spareId] ?: mutableListOf<String>()
                         sparesPhotos.add(photoUrl)
                         zapSparesPhotos[spareId] = sparesPhotos
 
                         // Save the file
-                        val file = File("uploads/${name.joinToString(".")}")
+                            val file = File("/Users/intraector/dev/apps/backend/db/files/spares/${name.joinToString(".")}")
                         savedFiles.add(file)
                         val parentDir = file.parentFile
                         if (parentDir != null && !parentDir.exists()) {
                             parentDir.mkdirs()
                         }
+                        try {
+
                         part.provider().copyAndClose(file.writeChannel())
+                        } catch (e: Exception) {
+                            println(e)
+                        }
                     }
 
                     else -> Unit

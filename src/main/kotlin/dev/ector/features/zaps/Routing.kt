@@ -23,7 +23,7 @@ fun Application.configureRoutingZaps() {
     )
     routing {
         route("/api/v1/zaps") {
-            staticFiles("/images", File("uploads/"))
+            staticFiles("/images", File("/Users/intraector/dev/apps/backend/db/files/spares"))
             get("") {
                 val req = ZapsReq(
                     pageNumber = call.parameters.pageNumber(),
