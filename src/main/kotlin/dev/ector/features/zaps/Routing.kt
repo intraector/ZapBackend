@@ -1,10 +1,7 @@
 package dev.ector.features.zaps
 
-import dev.ector.features._shared.AppConfig
 import dev.ector.features._shared.extensions.*
-import dev.ector.features.zaps.domain.controller.ZapController
-import dev.ector.features.zaps.domain.interfaces.IController
-import dev.ector.features.zaps.domain.interfaces.IZapsRepo
+import dev.ector.features.zaps.domain.interfaces.IZapController
 import dev.ector.features.zaps.domain.models.ZapsReq
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -16,11 +13,7 @@ import org.koin.ktor.ext.inject
 import java.io.File
 
 fun Application.configureRoutingZaps() {
-    val zapsRepo: IZapsRepo by inject()
-    val controller: IController = ZapController(
-        zapsRepo,
-        inject<AppConfig>().value.address,
-    )
+    val controller by inject<IZapController>()
     routing {
         route("/api/v1/zaps") {
             staticFiles("/images", File("/Users/intraector/dev/apps/backend/db/files/spares"))
@@ -29,7 +22,7 @@ fun Application.configureRoutingZaps() {
                     pageNumber = call.parameters.pageNumber(),
                     pageSize = call.parameters.pageSize(),
                 )
-                val output = zapsRepo.fetch(req)
+                val output = controller.fetch(req)
                 call.respond(HttpStatusCode.OK, output)
             }
 
@@ -43,7 +36,7 @@ fun Application.configureRoutingZaps() {
                 call.pathParameters
                     .requireNonNull(FieldName.ID)
                     .andAssert { it.toIntOrNull() != null }
-                zapsRepo.delete(call.pathParameters[FieldName.ID]!!.toInt())
+                controller.delete(call.pathParameters[FieldName.ID]!!.toInt())
                 call.respond(HttpStatusCode.OK)
             }
 

@@ -2,17 +2,23 @@ package dev.ector
 
 import address
 import dev.ector.database.mysql.mysqlModule
+import dev.ector.database.postgres.auth.phone.PhoneCodesTable
 import dev.ector.database.postgres.dict.region.RegionTable
 import dev.ector.database.postgres.postgresModule
 import dev.ector.database.postgres.spares.SparesTable
+import dev.ector.database.postgres.users.UsersTable
 import dev.ector.database.postgres.zaps.ZapsTable
 import dev.ector.features._shared.AppConfig
 import dev.ector.features._shared.exceptions.AuthenticationException
 import dev.ector.features._shared.exceptions.AuthorizationException
 import dev.ector.features._shared.exceptions.RequiredParameterException
+import dev.ector.features._shared.exceptions.WrongCodeException
+import dev.ector.features.auth.authModule
 import dev.ector.features.auth.configureRoutingAuth
 import dev.ector.features.dict.configureRoutingDict
 import dev.ector.features.dict.dictModule
+import dev.ector.features.users.configureRoutingUsers
+import dev.ector.features.users.usersModule
 import dev.ector.features.zaps.configureRoutingZaps
 import dev.ector.features.zaps.zapsModule
 import io.ktor.http.*
@@ -44,6 +50,8 @@ fun Application.module() {
             mysqlModule(),
             postgresModule(),
             dictModule,
+            usersModule,
+            authModule,
             zapsModule,
         )
     }
@@ -66,6 +74,10 @@ fun Application.module() {
                     text = "403: $cause", status = HttpStatusCode.Forbidden
                 )
 
+                is WrongCodeException -> call.respondText(
+                    text = "412: ${cause.message}", status = HttpStatusCode.PreconditionFailed
+                )
+
 
                 else -> call.respondText(text = "500: $cause", status = HttpStatusCode.InternalServerError)
             }
@@ -73,14 +85,16 @@ fun Application.module() {
     }
 
     configureSerialization()
-    configureRouting()
     configureRoutingAuth()
     configureRoutingDict()
     configureRoutingZaps()
+    configureRoutingUsers()
 
     transaction {
         SchemaUtils.create(RegionTable)
         SchemaUtils.create(ZapsTable)
         SchemaUtils.create(SparesTable)
+        SchemaUtils.create(UsersTable)
+        SchemaUtils.create(PhoneCodesTable)
     }
 }

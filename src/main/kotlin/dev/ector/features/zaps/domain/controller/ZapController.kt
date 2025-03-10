@@ -1,21 +1,26 @@
 package dev.ector.features.zaps.domain.controller
 
+import dev.ector.database.postgres.PostgresDb
 import dev.ector.features._shared.exceptions.RequiredParameterException
 import dev.ector.features._shared.extensions.FieldName
-import dev.ector.features.zaps.domain.interfaces.IController
+import dev.ector.features.zaps.domain.interfaces.IZapController
 import dev.ector.features.zaps.domain.interfaces.IZapsRepo
 import dev.ector.features.zaps.domain.models.Zap
+import dev.ector.features.zaps.domain.models.ZapsReq
+import dev.ector.features.zaps.domain.models.ZapsResp
 import io.ktor.http.content.*
 import io.ktor.util.cio.*
 import io.ktor.utils.io.*
 import kotlinx.serialization.json.Json
+import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.File
 import java.util.*
 
 class ZapController(
     val repo: IZapsRepo,
     val address: String,
-) : IController {
+    val postgres: PostgresDb,
+) : IZapController {
     override suspend fun create(data: MultiPartData): Zap {
         val savedFiles = mutableListOf<File>()
         val format = Json { prettyPrint = true }
@@ -53,7 +58,7 @@ class ZapController(
                         zapSparesPhotos[spareId] = sparesPhotos
 
                         // Save the file
-                            val file = File("/Users/intraector/dev/apps/backend/db/files/spares/${name.joinToString(".")}")
+                        val file = File("/Users/intraector/dev/apps/backend/db/files/spares/${name.joinToString(".")}")
                         savedFiles.add(file)
                         val parentDir = file.parentFile
                         if (parentDir != null && !parentDir.exists()) {
@@ -61,7 +66,7 @@ class ZapController(
                         }
                         try {
 
-                        part.provider().copyAndClose(file.writeChannel())
+                            part.provider().copyAndClose(file.writeChannel())
                         } catch (e: Exception) {
                             println(e)
                         }
@@ -94,5 +99,17 @@ class ZapController(
             }
         }
 
+    }
+
+    override suspend fun fetch(req: ZapsReq): ZapsResp {
+        return transaction(postgres.db) {
+            repo.fetch(req)
+        }
+    }
+
+    override suspend fun delete(id: Int) {
+        transaction(postgres.db) {
+            repo.delete(id)
+        }
     }
 }
