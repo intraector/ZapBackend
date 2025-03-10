@@ -3,6 +3,7 @@ package dev.ector.features.auth
 import dev.ector.database.postgres.PostgresDb
 import dev.ector.features._shared.exceptions.RequiredParameterException
 import dev.ector.features._shared.exceptions.WrongCodeException
+import dev.ector.features._shared.extensions.FieldName
 import dev.ector.features._shared.extensions.requireNonNull
 import dev.ector.features._shared.validators.isValidPhone
 import dev.ector.features.auth.data.AuthRepo
