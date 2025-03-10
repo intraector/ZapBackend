@@ -6,6 +6,7 @@ import dev.ector.features.users.data.convert.toUserDto
 import dev.ector.features.users.domain.interfaces.IUsersRepo
 import dev.ector.features.users.domain.models.User
 import dev.ector.features.users.domain.models.UsersReq
+import dev.ector.features.users.domain.models.UsersResp
 
 class UsersRepo() : IUsersRepo {
 
@@ -17,8 +18,15 @@ class UsersRepo() : IUsersRepo {
         return user
     }
 
-    override fun fetch(req: UsersReq): List<User> {
-        return UsersTable.fetch(req).map { it.toUser() }
+    override fun fetch(req: UsersReq): UsersResp {
+        val users = UsersTable.fetch(req).map { it.toUser() }
+
+        return UsersResp(
+            pageNumber = req.pageNumber,
+            pageSize = req.pageSize,
+            noMorePages = users.size < req.pageSize,
+            data = users,
+        )
     }
 
     override fun fetchById(id: Int): User? {

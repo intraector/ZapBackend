@@ -3,7 +3,9 @@ package dev.ector.features.users.domain.controller
 import dev.ector.database.postgres.PostgresDb
 import dev.ector.features.users.domain.interfaces.IUsersController
 import dev.ector.features.users.domain.interfaces.IUsersRepo
+import dev.ector.features.users.domain.models.User
 import dev.ector.features.users.domain.models.UsersReq
+import dev.ector.features.users.domain.models.UsersResp
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class UsersController(
@@ -12,8 +14,8 @@ class UsersController(
 ) : IUsersController {
 
 
-    override fun fetch(req: UsersReq) {
-        transaction(postgres.db) {
+    override fun fetch(req: UsersReq): UsersResp {
+        return transaction(postgres.db) {
             repo.fetch(req)
         }
     }
@@ -24,8 +26,8 @@ class UsersController(
         }
     }
 
-    override fun fetchById(id: Int) {
-        transaction(postgres.db) {
+    override fun fetchById(id: Int): User? {
+        return transaction(postgres.db) {
             repo.fetchById(id)
         }
     }
