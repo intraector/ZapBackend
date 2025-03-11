@@ -1,15 +1,13 @@
 package dev.ector.features.auth
 
-import dev.ector.database.postgres.PostgresDb
 import dev.ector.features._shared.exceptions.RequiredParameterException
 import dev.ector.features._shared.exceptions.WrongCodeException
 import dev.ector.features._shared.extensions.FieldName
 import dev.ector.features._shared.extensions.requireNonNull
 import dev.ector.features._shared.validators.isValidPhone
-import dev.ector.features.auth.data.AuthRepo
-import dev.ector.features.auth.domain.controller.AuthController
+import dev.ector.features.auth.domain.interfaces.IAuthController
 import dev.ector.features.auth.domain.models.PhoneCodeReq
-import dev.ector.features.users.domain.interfaces.IUsersRepo
+import dev.ector.features.auth.domain.models.RefreshToken
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -18,11 +16,21 @@ import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
 fun Application.configureRoutingAuth() {
-    val postgres: PostgresDb by inject()
-    val usersRepo: IUsersRepo by inject()
-    val controller = AuthController(postgres, AuthRepo(), usersRepo)
+    val controller: IAuthController by inject()
     routing {
         route("/api/v1/auth") {
+
+            post("/refresh_token") {
+
+                val req = call.receive<RefreshToken>()
+                val newToken = controller.renewTokens(req.token)
+                if (newToken == null) {
+                    call.respond(HttpStatusCode.Unauthorized)
+                } else {
+                    call.respond(HttpStatusCode.OK, newToken)
+                }
+
+            }
 
             get("/get_phone_code") {
                 call.queryParameters
@@ -41,8 +49,8 @@ fun Application.configureRoutingAuth() {
                     throw RequiredParameterException("phone")
                 }
 
-                controller.signInWithPhone(req)
-                call.respond(HttpStatusCode.OK)
+                val tokens = controller.signInWithPhone(req)
+                call.respond(HttpStatusCode.OK, tokens)
             }
 
         }

@@ -6,3 +6,9 @@ ktor:
         host: localhost
         port: 8080
     development: true
+
+jwt:
+    audience: "ktor-jwt-audience"
+    realm: "ktor-jwt-realm"
+    issuer: "https://ector.dev"
+    secret: $SECRET

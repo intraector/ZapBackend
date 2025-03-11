@@ -1,11 +1,11 @@
 package dev.ector
 
-import address
 import dev.ector.database.mysql.mysqlModule
 import dev.ector.database.postgres.auth.phone.PhoneCodesTable
 import dev.ector.database.postgres.dict.region.RegionTable
 import dev.ector.database.postgres.postgresModule
 import dev.ector.database.postgres.spares.SparesTable
+import dev.ector.database.postgres.tokens.RefreshTokensTable
 import dev.ector.database.postgres.users.UsersTable
 import dev.ector.database.postgres.zaps.ZapsTable
 import dev.ector.features._shared.AppConfig
@@ -15,6 +15,7 @@ import dev.ector.features._shared.exceptions.RequiredParameterException
 import dev.ector.features._shared.exceptions.WrongCodeException
 import dev.ector.features.auth.authModule
 import dev.ector.features.auth.configureRoutingAuth
+import dev.ector.features.auth.configureSecurity
 import dev.ector.features.dict.configureRoutingDict
 import dev.ector.features.dict.dictModule
 import dev.ector.features.users.configureRoutingUsers
@@ -36,15 +37,14 @@ fun main(args: Array<String>) {
 }
 
 fun Application.module() {
+
     install(Koin) {
         slf4jLogger()
 
         modules(
             module {
                 single {
-                    AppConfig(
-                        address = environment.config.address,
-                    )
+                    AppConfig(environment)
                 }
             },
             mysqlModule(),
@@ -85,12 +85,14 @@ fun Application.module() {
     }
 
     configureSerialization()
+    configureSecurity()
     configureRoutingAuth()
     configureRoutingDict()
     configureRoutingZaps()
     configureRoutingUsers()
 
     transaction {
+        SchemaUtils.create(RefreshTokensTable)
         SchemaUtils.create(RegionTable)
         SchemaUtils.create(ZapsTable)
         SchemaUtils.create(SparesTable)
