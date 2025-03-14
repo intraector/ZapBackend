@@ -8,25 +8,24 @@ import org.jetbrains.exposed.sql.kotlin.datetime.CurrentDateTime
 import org.jetbrains.exposed.sql.kotlin.datetime.datetime
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.update
-import java.util.*
 
-object RefreshTokensTable : IntIdTable() {
+object RefreshTokensTable : IntIdTable(name = "refresh_tokens") {
 
     private val userId = integer("user_id")
-    private val token = varchar("token", 50)
+    private val token = varchar("token", 1000)
     private val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
 
 
-    fun create(userId: Int): RefreshTokenDto {
+    fun insert(dto: RefreshTokenDto): RefreshTokenDto {
         val row = insert {
-            it[this.userId] = userId
-            it[token] = UUID.randomUUID().toString()
+            it[userId] = dto.userId
+            it[token] = dto.token
         }.resultedValues!!.first()
 
         return RefreshTokenDto(
             id = row[id].value,
             token = row[token],
-            userId = row[this.userId],
+            userId = row[userId],
             createdAt = row[createdAt]
         )
     }
@@ -46,16 +45,15 @@ object RefreshTokensTable : IntIdTable() {
             }
     }
 
-    fun renewToken(token: String): RefreshTokenDto? {
-        val newToken = UUID.randomUUID().toString()
+    fun update(token: RefreshTokenDto): RefreshTokenDto? {
 
-        val rowsUpdated = update({ RefreshTokensTable.token eq token }) {
-            it[this.token] = newToken
+        val rowsUpdated = update({ userId eq token.userId }) {
+            it[this.token] = token.token
         }
 
         if (rowsUpdated == 0) return null
 
-        return fetchByToken(newToken)
+        return fetchByToken(token.token)
     }
 
     fun deleteByUserId(userId: Int) {

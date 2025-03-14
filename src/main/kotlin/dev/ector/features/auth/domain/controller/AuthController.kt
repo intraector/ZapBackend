@@ -29,8 +29,20 @@ class AuthController(
             repo.deletePhoneCode(req.phone)
             val user = usersRepo.fetchByPhone(req.phone)
                 ?: usersRepo.create(User(phone = req.phone))
-            val access = jwtService.createJwtToken(user.id!!.toString())
-            val refresh = repo.createRefreshToken(user.id).token
+            val access = jwtService.createJwtToken(
+                user.id!!.toString(),
+                minutes = 15
+            )
+            val refreshJwt = jwtService.createJwtToken(
+                user.id.toString(),
+                minutes = 60 * 24 * 14 // 14 days
+            )
+            val refresh = repo.saveRefreshToken(
+                RefreshToken(
+                    userId = user.id,
+                    token = refreshJwt
+                )
+            ).token
             Tokens(access, refresh)
         }
     }
@@ -42,21 +54,37 @@ class AuthController(
 
     }
 
-    override suspend fun createRefreshToken(userId: Int): RefreshToken {
-        return transaction(postgres.db) {
-            repo.createRefreshToken(userId)
-        }
-    }
-
     override suspend fun renewTokens(token: String): Tokens? {
+        val validated = jwtService.validateToken(token)
+        if (!validated) {
+            val userId = jwtService.extractUserId(token)?.toIntOrNull()
+            if (userId != null) {
+                transaction(postgres.db) {
+                    repo.deleteRefreshToken(userId)
+                }
+            }
+            return null
+        }
+        val userId = jwtService.extractUserId(token)
+        if (userId == null) return null
+        val access = jwtService.createJwtToken(
+            userId,
+            minutes = 15
+        )
+        val refresh = jwtService.createJwtToken(
+            userId,
+            minutes = 60 * 24 * 14 // 14 days
+        )
         val newToken = transaction(postgres.db) {
-            repo.renewToken(token)
+            repo.updateRefreshToken(
+                RefreshToken(
+                    userId = userId.toInt(),
+                    token = refresh
+                )
+            )
         }
         return newToken?.let {
-            return Tokens(
-                access = jwtService.createJwtToken(it.userId.toString()),
-                refresh = it.token
-            )
+            return Tokens(access, refresh)
         }
     }
 }

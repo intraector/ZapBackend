@@ -21,7 +21,6 @@ fun Application.configureRoutingAuth() {
         route("/api/v1/auth") {
 
             post("/refresh_token") {
-
                 val req = call.receive<RefreshToken>()
                 val newToken = controller.renewTokens(req.token)
                 if (newToken == null) {
@@ -29,7 +28,6 @@ fun Application.configureRoutingAuth() {
                 } else {
                     call.respond(HttpStatusCode.OK, newToken)
                 }
-
             }
 
             get("/get_phone_code") {

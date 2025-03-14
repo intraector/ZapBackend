@@ -8,7 +8,7 @@ import org.jetbrains.exposed.sql.kotlin.datetime.CurrentDateTime
 import org.jetbrains.exposed.sql.kotlin.datetime.datetime
 import org.jetbrains.exposed.sql.selectAll
 
-object PhoneCodesTable : IntIdTable() {
+object PhoneCodesTable : IntIdTable(name = "phone_codes") {
     private val phone = varchar("desc", 20)
     private val code = varchar("code", 6)
     private val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
