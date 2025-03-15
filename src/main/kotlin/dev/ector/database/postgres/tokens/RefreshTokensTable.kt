@@ -45,15 +45,15 @@ object RefreshTokensTable : IntIdTable(name = "refresh_tokens") {
             }
     }
 
-    fun update(token: RefreshTokenDto): RefreshTokenDto? {
+    fun replace(oldToken: String, newToken : String): RefreshTokenDto? {
 
-        val rowsUpdated = update({ userId eq token.userId }) {
-            it[this.token] = token.token
+        val rowsUpdated = update({ token eq oldToken }) {
+            it[this.token] = newToken
         }
-
+        println("rowsUpdated: $rowsUpdated")
         if (rowsUpdated == 0) return null
 
-        return fetchByToken(token.token)
+        return fetchByToken(newToken)
     }
 
     fun deleteByUserId(userId: Int) {

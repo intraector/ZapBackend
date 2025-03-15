@@ -12,3 +12,11 @@ jwt:
     realm: "ktor-jwt-realm"
     issuer: "https://ector.dev"
     secret: $SECRET
+mysql:
+    host: "localhost:3306/dictdb"
+    user: $MYSQL_USER
+    password: $MYSQL_PASSWORD
+postgres:
+    host: "localhost:5432/training"
+    user: $POSTGRES_USER
+    password: $POSTGRES_PASSWORD

@@ -35,13 +35,8 @@ class AuthRepo() : IAuthRepo {
         )
     }
 
-    override fun updateRefreshToken(token: RefreshToken): RefreshToken? {
-        val tokenDto = RefreshTokensTable.update(
-            RefreshTokenDto(
-                token = token.token,
-                userId = token.userId!!
-            )
-        )
+    override fun replaceRefreshToken(oldToken: String, newToken: String): RefreshToken? {
+        val tokenDto = RefreshTokensTable.replace(oldToken, newToken)
         return tokenDto?.let {
             RefreshToken(
                 id = tokenDto.id,

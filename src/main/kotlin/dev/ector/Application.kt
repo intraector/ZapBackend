@@ -37,18 +37,18 @@ fun main(args: Array<String>) {
 }
 
 fun Application.module() {
-
+    val config = AppConfig(environment)
     install(Koin) {
         slf4jLogger()
 
         modules(
             module {
                 single {
-                    AppConfig(environment)
+                    config
                 }
             },
-            mysqlModule(),
-            postgresModule(),
+            mysqlModule(config),
+            postgresModule(config),
             dictModule,
             usersModule,
             authModule,

@@ -76,12 +76,7 @@ class AuthController(
             minutes = 60 * 24 * 14 // 14 days
         )
         val newToken = transaction(postgres.db) {
-            repo.updateRefreshToken(
-                RefreshToken(
-                    userId = userId.toInt(),
-                    token = refresh
-                )
-            )
+            repo.replaceRefreshToken(token, refresh)
         }
         return newToken?.let {
             return Tokens(access, refresh)
