@@ -18,6 +18,7 @@ import dev.ector.features.auth.configureRoutingAuth
 import dev.ector.features.auth.configureSecurity
 import dev.ector.features.dict.configureRoutingDict
 import dev.ector.features.dict.dictModule
+import dev.ector.features.roles.rolesModule
 import dev.ector.features.users.configureRoutingUsers
 import dev.ector.features.users.usersModule
 import dev.ector.features.zaps.configureRoutingZaps
@@ -49,9 +50,10 @@ fun Application.module() {
             },
             mysqlModule(config),
             postgresModule(config),
-            dictModule,
-            usersModule,
             authModule,
+            dictModule,
+            rolesModule,
+            usersModule,
             zapsModule,
         )
     }
@@ -87,9 +89,9 @@ fun Application.module() {
     configureSerialization()
     configureSecurity()
     configureRoutingAuth()
+    configureRoutingUsers()
     configureRoutingDict()
     configureRoutingZaps()
-    configureRoutingUsers()
 
     transaction {
         SchemaUtils.create(RefreshTokensTable)

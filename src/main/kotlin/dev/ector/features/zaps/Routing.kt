@@ -32,11 +32,11 @@ fun Application.configureRoutingZaps() {
                 call.respond(HttpStatusCode.OK, output)
             }
 
-            delete("/{${FieldName.ID}}") {
+            delete("/{${F.ID}}") {
                 call.pathParameters
-                    .requireNonNull(FieldName.ID)
+                    .requireNonNull(F.ID)
                     .andAssert { it.toIntOrNull() != null }
-                controller.delete(call.pathParameters[FieldName.ID]!!.toInt())
+                controller.delete(call.pathParameters[F.ID]!!.toInt())
                 call.respond(HttpStatusCode.OK)
             }
 

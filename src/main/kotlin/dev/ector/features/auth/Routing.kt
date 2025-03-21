@@ -1,8 +1,10 @@
 package dev.ector.features.auth
 
+import dev.ector.features._shared.S
+import dev.ector.features._shared.div
 import dev.ector.features._shared.exceptions.RequiredParameterException
 import dev.ector.features._shared.exceptions.WrongCodeException
-import dev.ector.features._shared.extensions.FieldName
+import dev.ector.features._shared.extensions.F
 import dev.ector.features._shared.extensions.requireNonNull
 import dev.ector.features._shared.validators.isValidPhone
 import dev.ector.features.auth.domain.interfaces.IAuthController
@@ -18,9 +20,9 @@ import org.koin.ktor.ext.inject
 fun Application.configureRoutingAuth() {
     val controller: IAuthController by inject()
     routing {
-        route("/api/v1/auth") {
+        route(S.apiV1 / S.auth) {
 
-            post("/refresh_token") {
+            post("" / S.refresh_token) {
                 val req = call.receive<RefreshToken>()
                 val newToken = controller.renewTokens(req.token)
                 if (newToken == null) {
@@ -30,15 +32,15 @@ fun Application.configureRoutingAuth() {
                 }
             }
 
-            get("/get_phone_code") {
+            get("" / S.phone_code) {
                 call.queryParameters
-                    .requireNonNull(FieldName.PHONE)
-                val phone = call.queryParameters[FieldName.PHONE]!!
+                    .requireNonNull(F.PHONE)
+                val phone = call.queryParameters[F.PHONE]!!
                 controller.createPhoneCode(phone)
                 call.respond(HttpStatusCode.OK)
             }
 
-            post("/sign_in_with_phone") {
+            post("" / S.sign_in_with_phone) {
                 val req = call.receive<PhoneCodeReq>()
                 if (req.code.length != 6) {
                     throw WrongCodeException()

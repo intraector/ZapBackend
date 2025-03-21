@@ -2,7 +2,7 @@ package dev.ector.features.zaps.domain.controller
 
 import dev.ector.database.postgres.PostgresDb
 import dev.ector.features._shared.exceptions.RequiredParameterException
-import dev.ector.features._shared.extensions.FieldName
+import dev.ector.features._shared.extensions.F
 import dev.ector.features.zaps.domain.interfaces.IZapController
 import dev.ector.features.zaps.domain.interfaces.IZapsRepo
 import dev.ector.features.zaps.domain.models.Zap
@@ -32,7 +32,7 @@ class ZapController(
             data.forEachPart { part ->
                 when (part) {
                     is PartData.FormItem -> {
-                        if (part.name == FieldName.ZAP) {
+                        if (part.name == F.ZAP) {
                             zap = format.decodeFromString(Zap.serializer(), part.value)
                             println(zap)
                         }
@@ -42,7 +42,7 @@ class ZapController(
                         // We need spareId to determine which spare the photo belongs to
                         val spareId = part.name?.toIntOrNull()
                         if (spareId == null) {
-                            throw RequiredParameterException("photo ${FieldName.SPARE_ID}")
+                            throw RequiredParameterException("photo ${F.SPARE_ID}")
                         }
 
                         // Get the file name
@@ -76,7 +76,7 @@ class ZapController(
                 }
             }
 
-            zap ?: throw RequiredParameterException(FieldName.ZAP)
+            zap ?: throw RequiredParameterException(F.ZAP)
 
 
             // Add the photos to the spares

@@ -29,11 +29,16 @@ class JwtService(
             .withIssuer(issuer)
             .build()
 
-    fun createJwtToken(userId: String, minutes: Int): String {
+    fun createJwtToken(
+        userId: String,
+        minutes: Int,
+        roles: Array<String>
+    ): String {
         return JWT.create()
             .withAudience(audience)
             .withIssuer(issuer)
             .withClaim("user_id", userId)
+            .withArrayClaim("roles", roles)
             .withExpiresAt(Date(System.currentTimeMillis() + minutes * 60 * 1000))
             .sign(Algorithm.HMAC256(secret))
     }
@@ -83,6 +88,15 @@ class JwtService(
         try {
             val decodedJWT = jwtVerifier.verify(token)
             return decodedJWT.getClaim("user_id").asString()
+        } catch (_: Exception) {
+            return null
+        }
+    }
+
+    fun extractRoles(token: String): Array<String>? {
+        try {
+            val decodedJWT = jwtVerifier.verify(token)
+            return decodedJWT.getClaim("roles").asArray(String::class.java)
         } catch (_: Exception) {
             return null
         }

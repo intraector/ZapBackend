@@ -23,19 +23,21 @@ class AuthController(
     override suspend fun signInWithPhone(req: PhoneCodeReq): Tokens {
         return transaction(postgres.db) {
             val codeDto = PhoneCodesTable.fetch(req.phone)
+            repo.deletePhoneCode(req.phone)
             if (codeDto == null || codeDto.code != req.code) {
                 throw WrongCodeException()
             }
-            repo.deletePhoneCode(req.phone)
             val user = usersRepo.fetchByPhone(req.phone)
                 ?: usersRepo.create(User(phone = req.phone))
             val access = jwtService.createJwtToken(
                 user.id!!.toString(),
-                minutes = 15
+                minutes = 600,
+                roles = arrayOf("user")
             )
             val refreshJwt = jwtService.createJwtToken(
                 user.id.toString(),
-                minutes = 60 * 24 * 14 // 14 days
+                minutes = 60 * 24 * 14, // 14 days
+                roles = arrayOf("user")
             )
             val refresh = repo.saveRefreshToken(
                 RefreshToken(
@@ -69,11 +71,13 @@ class AuthController(
         if (userId == null) return null
         val access = jwtService.createJwtToken(
             userId,
-            minutes = 15
+            minutes = 600,
+            roles = arrayOf("user")
         )
         val refresh = jwtService.createJwtToken(
             userId,
-            minutes = 60 * 24 * 14 // 14 days
+            minutes = 60 * 24 * 14, // 14 days
+            roles = arrayOf("user")
         )
         val newToken = transaction(postgres.db) {
             repo.replaceRefreshToken(token, refresh)

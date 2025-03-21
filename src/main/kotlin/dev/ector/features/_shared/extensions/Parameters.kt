@@ -4,17 +4,17 @@ import dev.ector.features._shared.exceptions.RequiredParameterException
 import io.ktor.http.*
 
 fun Parameters.pageNumber(default: Int = 1): Int {
-    var output = this[FieldName.PAGE_NUMBER]?.toIntOrNull() ?: default
+    var output = this[F.PAGE_NUMBER]?.toIntOrNull() ?: default
     if (output < 1) output = 1
     return output
 }
 
 fun Parameters.pageSize(default: Int = 100): Int {
-    return this[FieldName.PAGE_SIZE]?.toIntOrNull() ?: default
+    return this[F.PAGE_SIZE]?.toIntOrNull() ?: default
 }
 
 fun Parameters.searchQuery(default: String = ""): String {
-    return this[FieldName.SEARCH_QUERY] ?: default
+    return this[F.SEARCH_QUERY] ?: default
 }
 
 fun Parameters.requireNonNull(vararg fields: String): Pair<Set<String>, Parameters> {

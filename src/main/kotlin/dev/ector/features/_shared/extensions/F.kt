@@ -1,8 +1,9 @@
 package dev.ector.features._shared.extensions
 
-object FieldName {
-    const val PAGE_SIZE = "page_size"
+/// F stands for "Field"
+object F {
     const val PAGE_NUMBER = "page_number"
+    const val PAGE_SIZE = "page_size"
     const val SEARCH_QUERY = "query"
     const val BRAND_ID = "brand_id"
     const val MODEL_ID = "model_id"
@@ -29,4 +30,8 @@ object FieldName {
     const val CREATED_AT = "created"
     const val CODE = "code"
 
+
 }
+
+val String.param: String
+    get() = "{$this}"
