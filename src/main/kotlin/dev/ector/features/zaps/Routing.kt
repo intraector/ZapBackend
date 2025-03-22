@@ -1,5 +1,8 @@
 package dev.ector.features.zaps
 
+import dev.ector.features._shared.AppConfig
+import dev.ector.features._shared.S
+import dev.ector.features._shared.div
 import dev.ector.features._shared.extensions.*
 import dev.ector.features.zaps.domain.interfaces.IZapController
 import dev.ector.features.zaps.domain.models.ZapsReq
@@ -14,9 +17,10 @@ import java.io.File
 
 fun Application.configureRoutingZaps() {
     val controller by inject<IZapController>()
+    val config by inject<AppConfig>()
     routing {
-        route("/api/v1/zaps") {
-            staticFiles("/images", File("/Users/intraector/dev/apps/backend/db/files/spares"))
+        route(S.apiV1 / S.zaps) {
+            staticFiles("" / S.images, File(config.uploadsZapsSparesImages))
             get("") {
                 val req = ZapsReq(
                     pageNumber = call.parameters.pageNumber(),
@@ -32,7 +36,7 @@ fun Application.configureRoutingZaps() {
                 call.respond(HttpStatusCode.OK, output)
             }
 
-            delete("/{${F.ID}}") {
+            delete(F.ID.param) {
                 call.pathParameters
                     .requireNonNull(F.ID)
                     .andAssert { it.toIntOrNull() != null }

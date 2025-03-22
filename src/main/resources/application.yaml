@@ -1,22 +1,26 @@
 ktor:
-    application:
-        modules:
-            - dev.ector.ApplicationKt.module
-    deployment:
-        host: localhost
-        port: 8080
-    development: true
+  application:
+    modules:
+      - dev.ector.ApplicationKt.module
+  deployment:
+    host: localhost
+    port: 8080
+  development: true
 
 jwt:
-    audience: "ktor-jwt-audience"
-    realm: "ktor-jwt-realm"
-    issuer: "https://ector.dev"
-    secret: $SECRET
+  audience: "ktor-jwt-audience"
+  realm: "ktor-jwt-realm"
+  issuer: "https://ector.dev"
+  secret: $SECRET
 mysql:
-    host: "localhost:3306/dictdb"
-    user: $MYSQL_USER
-    password: $MYSQL_PASSWORD
+  host: "localhost:3306/dictdb"
+  user: $MYSQL_USER
+  password: $MYSQL_PASSWORD
 postgres:
-    host: "localhost:5432/training"
-    user: $POSTGRES_USER
-    password: $POSTGRES_PASSWORD
+  host: "localhost:5432/training"
+  user: $POSTGRES_USER
+  password: $POSTGRES_PASSWORD
+uploads:
+  zaps:
+    spares:
+      images: "/Users/intraector/dev/apps/backend/db/files/spares"

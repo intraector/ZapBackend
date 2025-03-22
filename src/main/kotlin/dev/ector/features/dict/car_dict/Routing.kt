@@ -36,7 +36,7 @@ fun Application.configureRoutingDictCars() {
                 }
 
 
-                get("/models") {
+                get("" / S.brands) {
                     call.parameters
                         .requireNonNull(F.BRAND_ID)
                         .andAssert { it.toIntOrNull() != null }
@@ -50,7 +50,7 @@ fun Application.configureRoutingDictCars() {
                     call.respond(HttpStatusCode.OK, output)
                 }
 
-                get("/generations") {
+                get("" / S.generations) {
                     call.parameters
                         .requireNonNull(F.MODEL_ID)
                         .andAssert { it.toIntOrNull() != null }
@@ -64,7 +64,7 @@ fun Application.configureRoutingDictCars() {
                     call.respond(HttpStatusCode.OK, output)
                 }
 
-                get("/bodies") {
+                get("" / S.bodies) {
                     call.parameters
                         .requireNonNull(F.MODEL_ID)
                         .andAssert { it.toIntOrNull() != null }
@@ -80,7 +80,7 @@ fun Application.configureRoutingDictCars() {
                     call.respond(HttpStatusCode.OK, output)
                 }
 
-                get("/modifications") {
+                get("" / S.modifications) {
                     call.parameters
                         .requireNonNull(
                             F.MODEL_ID,

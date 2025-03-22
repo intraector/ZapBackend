@@ -14,4 +14,5 @@ class AppConfig(environment: ApplicationEnvironment) {
     val postgresHost = environment.config.property("postgres.host").getString()
     val postgresUser = environment.config.property("postgres.user").getString()
     val postgresPassword = environment.config.property("postgres.password").getString()
+    val uploadsZapsSparesImages = environment.config.property("uploads.zaps.spares.images").getString()
 }

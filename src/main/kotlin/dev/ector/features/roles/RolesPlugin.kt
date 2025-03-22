@@ -1,10 +1,8 @@
 package dev.ector.features.roles
 
-import dev.ector.features._shared.S
-import dev.ector.features._shared.div
-import dev.ector.features._shared.extensions.F
-import dev.ector.features._shared.extensions.param
 import dev.ector.features.auth.data.JwtService
+import dev.ector.features.roles.domain.interfaces.IRolesController
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.application.hooks.*
 import io.ktor.server.auth.*
@@ -12,22 +10,14 @@ import io.ktor.server.auth.jwt.*
 import io.ktor.server.plugins.*
 import io.ktor.server.routing.*
 import io.ktor.server.routing.RoutingRoot.Plugin.RoutingCallStarted
+import io.ktor.util.reflect.*
 
 
-//        val jwtService: JwtService by inject()
-
-class PluginConfiguration(val jwtService: JwtService) {}
-
-fun createRbacPlugin(jwtService: JwtService) = createRouteScopedPlugin(
-    name = "RbacPlugin",
-    createConfiguration = {
-        PluginConfiguration(
-            jwtService = jwtService
-        )
-    },
-) {
+fun createRolesPlugin(
+    controller: IRolesController,
+    jwtService: JwtService
+) = createRouteScopedPlugin(name = "RolesPlugin") {
     var pathWithMethod: String = ""
-    val jwtService = pluginConfig.jwtService
     pluginConfig.apply {
         on(MonitoringEvent(RoutingCallStarted)) { call ->
             pathWithMethod = call.toPathWithMethod()
@@ -35,10 +25,22 @@ fun createRbacPlugin(jwtService: JwtService) = createRouteScopedPlugin(
 
         on(AuthenticationChecked) {
             val principal = it.principal<JWTPrincipal>()
-            println("fullPath: $pathWithMethod")
-            val p = S.GET + S.apiV1 / S.dict / S.region / F.MODEL_ID.param / S.images / F.ID.param
-            println("p: $p")
-            println("fullPath == p : ${pathWithMethod == p}")
+            if (principal == null) {
+                it.respond(HttpStatusCode.Forbidden, typeInfo<HttpStatusCode>())
+                return@on
+            }
+
+            val roles = jwtService.extractRoles(principal.payload)
+            println("Roles: $roles")
+            if (roles == null) {
+                it.respond(HttpStatusCode.Forbidden, typeInfo<HttpStatusCode>())
+                return@on
+            }
+            val hasAccess = controller.checkPermission(pathWithMethod, roles)
+            println("Has access: $hasAccess")
+            if (!hasAccess) {
+                it.respond(HttpStatusCode.Forbidden, typeInfo<HttpStatusCode>())
+            }
         }
 
     }

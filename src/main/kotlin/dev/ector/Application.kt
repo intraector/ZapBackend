@@ -4,6 +4,7 @@ import dev.ector.database.mysql.mysqlModule
 import dev.ector.database.postgres.auth.phone.PhoneCodesTable
 import dev.ector.database.postgres.dict.region.RegionTable
 import dev.ector.database.postgres.postgresModule
+import dev.ector.database.postgres.roles.RolesTable
 import dev.ector.database.postgres.spares.SparesTable
 import dev.ector.database.postgres.tokens.RefreshTokensTable
 import dev.ector.database.postgres.users.UsersTable
@@ -18,6 +19,7 @@ import dev.ector.features.auth.configureRoutingAuth
 import dev.ector.features.auth.configureSecurity
 import dev.ector.features.dict.configureRoutingDict
 import dev.ector.features.dict.dictModule
+import dev.ector.features.roles.domain.interfaces.IRolesController
 import dev.ector.features.roles.rolesModule
 import dev.ector.features.users.configureRoutingUsers
 import dev.ector.features.users.usersModule
@@ -27,9 +29,11 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.koin.dsl.module
+import org.koin.ktor.ext.inject
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
 
@@ -94,11 +98,17 @@ fun Application.module() {
     configureRoutingZaps()
 
     transaction {
+        SchemaUtils.create(RolesTable)
         SchemaUtils.create(RefreshTokensTable)
         SchemaUtils.create(RegionTable)
         SchemaUtils.create(ZapsTable)
         SchemaUtils.create(SparesTable)
         SchemaUtils.create(UsersTable)
         SchemaUtils.create(PhoneCodesTable)
+    }
+
+    val rolesController: IRolesController by inject()
+    runBlocking {
+        rolesController.syncInMemoryWithPersistent()
     }
 }

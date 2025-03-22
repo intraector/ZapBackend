@@ -9,6 +9,7 @@ import dev.ector.features.auth.domain.interfaces.IAuthRepo
 import dev.ector.features.auth.domain.models.PhoneCodeReq
 import dev.ector.features.auth.domain.models.RefreshToken
 import dev.ector.features.auth.domain.models.Tokens
+import dev.ector.features.roles.domain.models.Role
 import dev.ector.features.users.domain.interfaces.IUsersRepo
 import dev.ector.features.users.domain.models.User
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -32,12 +33,12 @@ class AuthController(
             val access = jwtService.createJwtToken(
                 user.id!!.toString(),
                 minutes = 600,
-                roles = arrayOf("user")
+                roles = setOf(Role.user, Role.admin)
             )
             val refreshJwt = jwtService.createJwtToken(
                 user.id.toString(),
                 minutes = 60 * 24 * 14, // 14 days
-                roles = arrayOf("user")
+                roles = setOf(Role.user, Role.admin)
             )
             val refresh = repo.saveRefreshToken(
                 RefreshToken(
@@ -67,17 +68,16 @@ class AuthController(
             }
             return null
         }
-        val userId = jwtService.extractUserId(token)
-        if (userId == null) return null
+        val userId = jwtService.extractUserId(token) ?: return null
         val access = jwtService.createJwtToken(
             userId,
             minutes = 600,
-            roles = arrayOf("user")
+            roles = setOf(Role.user)
         )
         val refresh = jwtService.createJwtToken(
             userId,
             minutes = 60 * 24 * 14, // 14 days
-            roles = arrayOf("user")
+            roles = setOf(Role.user)
         )
         val newToken = transaction(postgres.db) {
             repo.replaceRefreshToken(token, refresh)

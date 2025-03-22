@@ -1,8 +1,5 @@
 package dev.ector.features._shared
 
-import io.ktor.server.request.*
-import io.ktor.server.routing.*
-
 /// S stands for "Segement"
 @Suppress("EnumEntryName")
 enum class S {
@@ -12,7 +9,12 @@ enum class S {
     sign_in_with_phone,
     cars,
     brands,
+    models,
+    generations,
+    bodies,
+    modifications,
     zap,
+    zaps,
     images,
     dict,
     region,
@@ -40,14 +42,3 @@ operator fun String.div(other: S): String {
 operator fun String.div(other: String): String {
     return "$this/${other}"
 }
-
-val RoutingRequest.pathWithMethod: String
-    get() {
-        val rawPath = path()
-        val segments = rawPath.trim('/').split('/')
-        println("segments: $segments")
-        val hasPathParameters = !this.pathVariables.isEmpty()
-        println("hasPathParameters: $hasPathParameters")
-        println("pathVariables: ${this.pathVariables}")
-        return this.httpMethod.value + " " + this.path()
-    }

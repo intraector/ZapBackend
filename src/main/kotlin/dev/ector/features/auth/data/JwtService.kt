@@ -4,8 +4,10 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.exceptions.JWTVerificationException
+import com.auth0.jwt.interfaces.Payload
 import dev.ector.database.postgres.PostgresDb
 import dev.ector.features._shared.AppConfig
+import dev.ector.features.roles.domain.models.Role
 import dev.ector.features.users.domain.interfaces.IUsersRepo
 import io.ktor.server.auth.jwt.*
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -32,13 +34,13 @@ class JwtService(
     fun createJwtToken(
         userId: String,
         minutes: Int,
-        roles: Array<String>
+        roles: Set<Role>
     ): String {
         return JWT.create()
             .withAudience(audience)
             .withIssuer(issuer)
             .withClaim("user_id", userId)
-            .withArrayClaim("roles", roles)
+            .withArrayClaim("roles", roles.map { it.code }.toTypedArray())
             .withExpiresAt(Date(System.currentTimeMillis() + minutes * 60 * 1000))
             .sign(Algorithm.HMAC256(secret))
     }
@@ -93,13 +95,8 @@ class JwtService(
         }
     }
 
-    fun extractRoles(token: String): Array<String>? {
-        try {
-            val decodedJWT = jwtVerifier.verify(token)
-            return decodedJWT.getClaim("roles").asArray(String::class.java)
-        } catch (_: Exception) {
-            return null
-        }
+    fun extractRoles(payload: Payload): Array<String>? {
+        return payload.getClaim("roles").asArray(String::class.java)
     }
 
 
